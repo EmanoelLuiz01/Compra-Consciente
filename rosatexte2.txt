@@ -1,0 +1,315 @@
+/* Paleta de Cores Suaves com Toque de Verde (Feminino/Controle) */
+:root {
+    --rosa-principal: #FF99CC;     /* Rosa médio suave para destaque e botões */
+    --rosa-claro: #FCE4EC;        /* Fundo suave das perguntas */
+    --roxo-suave: #C5CAE9;        /* Um lilás suave para o fundo da página (como no vídeo) */
+    --verde-controle: #4CAF50;    /* Verde para ações positivas e economia */
+    --cinza-texto: #424242;       /* Cor de texto principal, mais suave */
+    --amarelo-atencao: #FFC107;   /* Atenção (mantido) */
+    --vermelho-risco: #E53935;    /* Alto risco (mantido, mas mais suave) */
+    --branco: #FFF;
+    --sombra-suave: rgba(255, 153, 204, 0.4); /* Sombra mais rosa/suave */
+}
+
+/* Estilos Gerais do Body e Container */
+body {
+    /* Usando cores mais suaves para o fundo, parecido com o vídeo mas em tons diferentes */
+    font-family: 'Quicksand', Arial, sans-serif;
+    background: linear-gradient(135deg, #F06292 0%, #CE93D8 100%); /* Degradê rosa/lilás */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    background-color: var(--branco);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px var(--sombra-suave); /* Sombra mais suave */
+    width: 90%;
+    max-width: 500px;
+}
+
+.screen {
+    transition: opacity 0.5s ease-in-out;
+}
+
+.hidden {
+    display: none;
+}
+
+/* ======================= TELA INICIAL ======================= */
+#tela-inicial {
+    text-align: center;
+}
+
+.card-inicial {
+    padding: 20px;
+}
+
+.shopping-icon {
+    font-size: 4em;
+    color: var(--rosa-principal);
+    background-color: var(--rosa-claro);
+    border-radius: 50%;
+    padding: 15px;
+    margin-bottom: 20px;
+    display: inline-block;
+}
+
+.card-inicial h1 {
+    color: var(--cinza-texto);
+    font-size: 1.8em;
+    margin-bottom: 10px;
+}
+
+.description {
+    color: #666;
+    margin-bottom: 25px;
+    font-size: 0.95em;
+}
+
+.icon-group {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 30px;
+}
+
+.icon-item {
+    text-align: center;
+    font-size: 0.8em;
+    color: #666;
+}
+
+.icon-item .material-icons {
+    font-size: 1.5em;
+    color: var(--rosa-principal);
+    display: block;
+    margin-bottom: 5px;
+}
+
+/* ======================= TELA DE AVALIAÇÃO ======================= */
+.title-avaliacao {
+    color: var(--rosa-principal); /* Título em rosa */
+    text-align: center;
+    font-size: 1.4em;
+    border-bottom: 1px solid var(--rosa-claro);
+    padding-bottom: 10px;
+    margin-top: 0;
+    font-weight: 700; /* Mais destaque */
+}
+
+.subtitle-avaliacao {
+    text-align: center;
+    color: #999;
+    font-size: 0.85em;
+    margin-bottom: 20px;
+}
+
+.pergunta-item {
+    background-color: var(--rosa-claro); /* Fundo da pergunta em rosa claro */
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border-left: 5px solid var(--rosa-principal); /* Linha lateral em rosa */
+}
+
+.question-title {
+    font-weight: 700;
+    color: var(--cinza-texto);
+    display: flex;
+    align-items: center;
+    margin-top: 0;
+}
+
+.question-title span {
+    background-color: var(--rosa-principal); /* Número da pergunta em rosa */
+    color: var(--branco);
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8em;
+    margin-right: 10px;
+}
+
+.opcoes-wrap {
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+}
+
+.opcao-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    margin-bottom: 5px;
+    cursor: pointer;
+    background-color: var(--branco);
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    transition: border-color 0.2s;
+    font-size: 0.9em;
+}
+
+.opcao-label:hover {
+    border-color: var(--rosa-principal);
+}
+
+.opcao-label input[type="radio"]:checked + .pontos {
+    color: var(--rosa-principal);
+    font-weight: bold;
+}
+
+.pontos {
+    color: #999;
+    font-size: 0.8em;
+}
+
+/* Botões de Ação */
+.btn-principal {
+    background-color: var(--verde-controle); /* Botão principal em verde (economia/ação) */
+    color: var(--branco);
+    border: none;
+    padding: 12px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.1s;
+}
+
+.btn-principal:hover {
+    background-color: #388E3C; /* Verde escuro no hover */
+    transform: translateY(-1px);
+}
+
+.btn-secundario {
+    background: none;
+    color: var(--rosa-principal); /* Botões secundários em rosa */
+    border: 1px solid var(--rosa-principal);
+    padding: 10px 15px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.btn-secundario:hover {
+    color: var(--branco);
+    background-color: var(--rosa-principal);
+}
+
+.botoes-form {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+/* ======================= TELA DE RESULTADO ======================= */
+#tela-resultado {
+    text-align: center;
+}
+
+.card-resultado {
+    padding: 20px 0;
+}
+
+.pontuacao-label {
+    color: #666;
+    font-size: 0.8em;
+    margin-bottom: 5px;
+}
+
+#circulo-pontuacao {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3em;
+    font-weight: bold;
+    color: var(--branco);
+    /* A cor será definida pelo JS */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+#titulo-resultado {
+    font-size: 1.5em;
+    margin: 0;
+    padding: 0;
+    font-weight: 700;
+}
+
+#mensagem-dica {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: var(--rosa-claro); /* Fundo da dica em rosa claro */
+    border-radius: 8px;
+    color: var(--cinza-texto);
+    font-style: italic;
+    border-left: 5px solid var(--verde-controle); /* Manter borda verde para 'economia' */
+}
+
+/* Tabela de Pontuação */
+.tabela-pontuacao {
+    margin: 30px 0 20px;
+    text-align: left;
+}
+
+.tabela-pontuacao h3 {
+    font-size: 1em;
+    margin-bottom: 10px;
+    color: var(--cinza-texto);
+}
+
+.tabela-pontuacao table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabela-pontuacao td {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9em;
+}
+
+.tabela-pontuacao td:last-child {
+    font-weight: bold;
+    text-align: right;
+}
+
+/* Cores da Tabela (Mantendo as cores de alerta padrão) */
+.verde { color: var(--verde-controle); }
+.amarelo { color: var(--amarelo-atencao); }
+.vermelho { color: var(--vermelho-risco); }
+
+.botoes-resultado {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* Responsividade (para telas menores) */
+@media (max-width: 600px) {
+    .container {
+        padding: 20px;
+    }
+    .botoes-form, .botoes-resultado {
+        flex-direction: column;
+    }
+    .btn-principal, .btn-secundario {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
