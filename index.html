@@ -48,6 +48,7 @@
                     </div>
                 </div>
                 <button id="iniciarAvaliacao" class="btn-principal">Quero consultar minha escolha de compra</button>
+                <button id="audioDescricaoInicial" class="btn-acessibilidade">Ouvir descrição da tela</button>
             </div>
         </div>
 
@@ -56,61 +57,51 @@
             <p class="subtitle-avaliacao">Responda honestamente para obter uma avaliação precisa</p>
 
             <form id="avaliacaoForm">
+                
                 <div class="pergunta-item" data-question="1">
-                    <p class="question-title"><span>1</span> Eu tenho risco de ficar sem dinheiro até receber novamente?
-                    </p>
+                    <p class="question-title audio-clickable" data-audio="Pergunta 1. Eu tenho risco de ficar sem dinheiro até receber novamente?"><span>1</span> Eu tenho risco de ficar sem dinheiro até receber novamente?</p>
                     <div class="opcoes-wrap">
-                        <label class="opcao-label"><input type="radio" name="p1" value="2" required> Sim <span
-                                class="pontos">(2 ponto)</span></label>
-                        <label class="opcao-label"><input type="radio" name="p1" value="1"> Em dúvida <span
-                                class="pontos">(1 ponto)</span></label>
-                        <label class="opcao-label"><input type="radio" name="p1" value="0"> Não <span class="pontos">(0
-                                pontos)</span></label>
+                        <label class="opcao-label audio-clickable" data-audio="Sim"><input type="radio" name="p1" value="2" required> Sim <span class="pontos">(2 ponto)</span></label>
+                        <label class="opcao-label audio-clickable" data-audio="Em dúvida"><input type="radio" name="p1" value="1"> Em dúvida <span class="pontos">(1 ponto)</span></label>
+                        <label class="opcao-label audio-clickable" data-audio="Não"><input type="radio" name="p1" value="0"> Não <span class="pontos">(0 pontos)</span></label>
                     </div>
                 </div>
 
-                <div class="pergunta-item" data-question="2">
-                    <p class="question-title"><span>2</span> Estou me sentindo bem e confortável em fazer a compra
-                        agora?</p>
+                <div class="pergunta-item hidden" data-question="2">
+                    <p class="question-title audio-clickable" data-audio="Pergunta 2. Estou me sentindo bem e confortável em fazer a compra agora?"><span>2</span> Estou me sentindo bem e confortável em fazer a compra agora?</p>
                     <div class="opcoes-wrap">
-                        <label class="opcao-label"><input type="radio" name="p2" value="0" required> Sim <span
-                                class="pontos">(0 pontos)</span></label>
-                        <label class="opcao-label"><input type="radio" name="p2" value="1"> Em dúvida <span
-                                class="pontos">(1 ponto)</span></label>
-                        <label class="opcao-label"><input type="radio" name="p2" value="2"> Não <span class="pontos">(2
-                                pontos)</span></label>
+                        <label class="opcao-label audio-clickable" data-audio="Sim"><input type="radio" name="p2" value="0" required> Sim <span class="pontos">(0 pontos)</span></label>
+                        <label class="opcao-label audio-clickable" data-audio="Em dúvida"><input type="radio" name="p2" value="1"> Em dúvida <span class="pontos">(1 ponto)</span></label>
+                        <label class="opcao-label audio-clickable" data-audio="Não"><input type="radio" name="p2" value="2"> Não <span class="pontos">(2 pontos)</span></label>
                     </div>
                 </div>
 
-                <div class="pergunta-item" data-question="3">
-                    <p class="question-title"><span>3</span> Eu consigo substituir essa compra por algo que já tenho?
-                    </p>
+                <div class="pergunta-item hidden" data-question="3">
+                    <p class="question-title audio-clickable" data-audio="Pergunta 3. Eu consigo substituir essa compra por algo que já tenho?"><span>3</span> Eu consigo substituir essa compra por algo que já tenho?</p>
                     <div class="opcoes-wrap">
-                        <label class="opcao-label"><input type="radio" name="p3" value="0" required> Sim <span
-                                class="pontos">(0 pontos)</span></label>
-                        <label class="opcao-label"><input type="radio" name="p3" value="1"> Em dúvida <span
-                                class="pontos">(1 ponto)</span></label>
-                        <label class="opcao-label"><input type="radio" name="p3" value="2"> Não <span class="pontos">(2
-                                pontos)</span></label>
+                        <label class="opcao-label audio-clickable" data-audio="Sim"><input type="radio" name="p3" value="0" required> Sim <span class="pontos">(0 pontos)</span></label>
+                        <label class="opcao-label audio-clickable" data-audio="Em dúvida"><input type="radio" name="p3" value="1"> Em dúvida <span class="pontos">(1 ponto)</span></label>
+                        <label class="opcao-label audio-clickable" data-audio="Não"><input type="radio" name="p3" value="2"> Não <span class="pontos">(2 pontos)</span></label>
                     </div>
                 </div>
 
                 <div class="botoes-form">
-                    <button type="button" id="voltarAoInicio" class="btn-secundario">Voltar ao início</button>
-                    <button type="submit" class="btn-principal" id="verResultadoBtn">Ver resultado ></button>
+                    <button type="button" id="voltarPergunta" class="btn-secundario hidden">Voltar</button>
+                    <button type="button" id="proximaPergunta" class="btn-principal">Próxima</button>
+                    <button type="submit" class="btn-principal hidden" id="verResultadoBtn">Ver resultado ></button>
                 </div>
             </form>
+            <button id="audioDescricaoAvaliacao" class="btn-acessibilidade">Ouvir descrição da tela</button>
         </div>
 
         <div id="tela-resultado" class="screen hidden">
             <div class="card-resultado">
                 <p class="pontuacao-label">pontos no total</p>
                 <div id="circulo-pontuacao">
-                    <span id="pontuacao-final">0</span>
+                    <span id="pontuacao-final" data-audio="Pontuação final: 0">0</span>
                 </div>
-
-                <h2 id="titulo-resultado" class="high-risk"></h2>
-                <p id="mensagem-dica"></p>
+                <h2 id="titulo-resultado" class="high-risk" data-audio=""> </h2>
+                <p id="mensagem-dica" data-audio=""></p>
 
                 <div class="tabela-pontuacao">
                     <h3>Entenda sua pontuação:</h3>
@@ -135,6 +126,7 @@
                     <button type="button" id="responderNovamente" class="btn-secundario">Responder novamente</button>
                 </div>
             </div>
+            <button id="audioDescricaoResultado" class="btn-acessibilidade">Ouvir descrição da tela</button>
         </div>
 
     </div>
