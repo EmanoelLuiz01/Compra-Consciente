@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,13 +9,25 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;500;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
 
+    <div vw class="enabled">
+        <div vw-access-button class="active"></div>
+        <div vw-plugin-wrapper>
+            <div class="vw-plugin-top-wrapper"></div>
+        </div>
+    </div>
+    <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+    <script>
+        new window.VLibras.Widget('https://vlibras.gov.br/app');
+    </script>
+
     <div class="container" id="app-container">
-        
+
         <div id="tela-inicial" class="screen">
             <div class="card-inicial">
-                <span class="material-icons shopping-icon">local_mall</span> 
+                <span class="material-icons shopping-icon">local_mall</span>
                 <h1>Minhas Finanças Conscientes</h1>
                 <p class="description">
                     Tome decisões financeiras com o coração e a razão. Use nossa escala para avaliar suas compras.
@@ -43,29 +56,41 @@
 
             <form id="avaliacaoForm">
                 <div class="pergunta-item" data-question="1">
-                    <p class="question-title"><span>1</span> Eu tenho risco de ficar sem dinheiro até receber novamente?</p>
+                    <p class="question-title"><span>1</span> Eu tenho risco de ficar sem dinheiro até receber novamente?
+                    </p>
                     <div class="opcoes-wrap">
-                        <label class="opcao-label"><input type="radio" name="p1" value="2" required> Sim <span class="pontos">(2 ponto)</span></label>
-                        <label class="opcao-label"><input type="radio" name="p1" value="1"> Em dúvida <span class="pontos">(1 ponto)</span></label>
-                        <label class="opcao-label"><input type="radio" name="p1" value="0"> Não <span class="pontos">(0 pontos)</span></label>
+                        <label class="opcao-label"><input type="radio" name="p1" value="2" required> Sim <span
+                                class="pontos">(2 ponto)</span></label>
+                        <label class="opcao-label"><input type="radio" name="p1" value="1"> Em dúvida <span
+                                class="pontos">(1 ponto)</span></label>
+                        <label class="opcao-label"><input type="radio" name="p1" value="0"> Não <span class="pontos">(0
+                                pontos)</span></label>
                     </div>
                 </div>
 
                 <div class="pergunta-item" data-question="2">
-                    <p class="question-title"><span>2</span> Estou me sentindo bem e confortável em fazer a compra agora?</p>
+                    <p class="question-title"><span>2</span> Estou me sentindo bem e confortável em fazer a compra
+                        agora?</p>
                     <div class="opcoes-wrap">
-                        <label class="opcao-label"><input type="radio" name="p2" value="0" required> Sim <span class="pontos">(0 pontos)</span></label>
-                        <label class="opcao-label"><input type="radio" name="p2" value="1"> Em dúvida <span class="pontos">(1 ponto)</span></label>
-                        <label class="opcao-label"><input type="radio" name="p2" value="2"> Não <span class="pontos">(2 pontos)</span></label>
+                        <label class="opcao-label"><input type="radio" name="p2" value="0" required> Sim <span
+                                class="pontos">(0 pontos)</span></label>
+                        <label class="opcao-label"><input type="radio" name="p2" value="1"> Em dúvida <span
+                                class="pontos">(1 ponto)</span></label>
+                        <label class="opcao-label"><input type="radio" name="p2" value="2"> Não <span class="pontos">(2
+                                pontos)</span></label>
                     </div>
                 </div>
 
                 <div class="pergunta-item" data-question="3">
-                    <p class="question-title"><span>3</span> Eu consigo substituir essa compra por algo que já tenho?</p>
+                    <p class="question-title"><span>3</span> Eu consigo substituir essa compra por algo que já tenho?
+                    </p>
                     <div class="opcoes-wrap">
-                        <label class="opcao-label"><input type="radio" name="p3" value="0" required> Sim <span class="pontos">(0 pontos)</span></label>
-                        <label class="opcao-label"><input type="radio" name="p3" value="1"> Em dúvida <span class="pontos">(1 ponto)</span></label>
-                        <label class="opcao-label"><input type="radio" name="p3" value="2"> Não <span class="pontos">(2 pontos)</span></label>
+                        <label class="opcao-label"><input type="radio" name="p3" value="0" required> Sim <span
+                                class="pontos">(0 pontos)</span></label>
+                        <label class="opcao-label"><input type="radio" name="p3" value="1"> Em dúvida <span
+                                class="pontos">(1 ponto)</span></label>
+                        <label class="opcao-label"><input type="radio" name="p3" value="2"> Não <span class="pontos">(2
+                                pontos)</span></label>
                     </div>
                 </div>
 
@@ -75,14 +100,14 @@
                 </div>
             </form>
         </div>
-        
+
         <div id="tela-resultado" class="screen hidden">
             <div class="card-resultado">
                 <p class="pontuacao-label">pontos no total</p>
                 <div id="circulo-pontuacao">
                     <span id="pontuacao-final">0</span>
                 </div>
-                
+
                 <h2 id="titulo-resultado" class="high-risk"></h2>
                 <p id="mensagem-dica"></p>
 
@@ -117,4 +142,3 @@
 </body>
 
 </html>
-
