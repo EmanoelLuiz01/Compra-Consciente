@@ -1,416 +1,429 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Referências dos elementos de tela
-    const telaInicial = document.getElementById('tela-inicial');
-    const telaAvaliacao = document.getElementById('tela-avaliacao');
-    const telaResultado = document.getElementById('tela-resultado');
+	// Referências dos elementos de tela
+	const telaAvaliacao = document.getElementById('tela-avaliacao');
+	const telaResultado = document.getElementById('tela-resultado');
 
-    // Botões de navegação
-    const iniciarAvaliacaoBtn = document.getElementById('iniciarAvaliacao');
-    const voltarAoInicioBtn = document.getElementById('voltarAoInicio');
-    const voltarAoInicioResultadoBtn = document.getElementById('voltarAoInicioResultado');
-    const responderNovamenteBtn = document.getElementById('responderNovamente');
+	// Botões de navegação
+	const voltarPerguntaBtn = document.getElementById('voltarPergunta');
+	const responderNovamenteBtn = document.getElementById('responderNovamente');
 
-    // Formulário e Resultado
-    const avaliacaoForm = document.getElementById('avaliacaoForm');
-    const pontuacaoFinalSpan = document.getElementById('pontuacao-final');
-    const circuloPontuacao = document.getElementById('circulo-pontuacao');
-    const tituloResultado = document.getElementById('titulo-resultado');
-    const mensagemDica = document.getElementById('mensagem-dica');
-    
-    // Cores (Mantidas as mesmas do CSS)
-    const VERDE = '#4CAF50';    // Verde para Compra Consciente
-    const AMARELO = '#FFC107'; // Amarelo para Atenção
-    const VERMELHO = '#E53935'; // Vermelho para Alto Risco
+	// Formulário e Resultado
+	const avaliacaoForm = document.getElementById('avaliacaoForm');
+	const pontuacaoFinalSpan = document.getElementById('pontuacao-final');
+	const circuloPontuacao = document.getElementById('circulo-pontuacao');
+	const tituloResultado = document.getElementById('titulo-resultado');
+	const mensagemDica = document.getElementById('mensagem-dica');
 
-    /**
-     * Função para trocar a tela visível.
-     */
-    function trocarTela(telaParaMostrar) {
-        // Esconde todas as telas
-        [telaInicial, telaAvaliacao, telaResultado].forEach(tela => {
-            tela.classList.add('hidden');
-        });
-        // Mostra a tela desejada
-        telaParaMostrar.classList.remove('hidden');
-    }
+	// Cores
+	const VERDE = '#4CAF50';
+	const AMARELO = '#FFC107';
+	const VERMELHO = '#E53935';
 
-    // Referências para paginação
-    const perguntas = document.querySelectorAll('.pergunta-item');
-    const voltarPerguntaBtn = document.getElementById('voltarPergunta');
-    const proximaPerguntaBtn = document.getElementById('proximaPergunta');
-    const verResultadoBtn = document.getElementById('verResultadoBtn');
-    let perguntaAtual = 0;
+	// === ADICIONADO: suporte a síntese de fala e funções utilitárias necessárias ===
+	// declara suporte cedo para evitar ReferenceError quando handlers são registrados
+	const speechSupported = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
 
-    /**
-     * Atualiza a pergunta visível com base no índice atual.
-     */
-    function atualizarPergunta() {
-        perguntas.forEach((pergunta, index) => {
-            pergunta.classList.toggle('hidden', index !== perguntaAtual);
-        });
+	// Narrador: cancela fala em andamento e tenta usar voz pt-BR
+	function narrarTexto(texto) {
+		if (!speechSupported || !texto) return;
+		try {
+			window.speechSynthesis.cancel();
+			const utterance = new SpeechSynthesisUtterance(texto);
+			utterance.lang = 'pt-BR';
+			const voices = window.speechSynthesis.getVoices();
+			utterance.voice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('pt')) || null;
+			window.speechSynthesis.speak(utterance);
+		} catch (err) {
+			// falha silenciosa — mantém o app funcional
+			console.warn('Erro ao tentar narrar texto:', err);
+		}
+	}
 
-        voltarPerguntaBtn.classList.toggle('hidden', perguntaAtual === 0);
-        proximaPerguntaBtn.classList.toggle('hidden', perguntaAtual === perguntas.length - 1);
-        verResultadoBtn.classList.toggle('hidden', perguntaAtual !== perguntas.length - 1);
-    }
+	// Remove trechos como "(2 pontos)" das strings de áudio
+	function removerIndicadorPontos(texto) {
+		return (texto || '').replace(/\(\s*\d+\s*pontos?\s*\)/gi, '').trim();
+	}
 
-    // Navegação entre perguntas
-    proximaPerguntaBtn.addEventListener('click', () => {
-        const radios = perguntas[perguntaAtual].querySelectorAll('input[type="radio"]');
-        const isRespondido = Array.from(radios).some(radio => radio.checked);
+	// Função simples para trocar telas (usada em vários pontos do código)
+	function trocarTela(telaParaMostrar) {
+		// Cancela qualquer narração em andamento ao trocar de tela
+		if (speechSupported && window.speechSynthesis) {
+			try { window.speechSynthesis.cancel(); } catch (e) { /* noop */ }
+		}
 
-        if (!isRespondido) {
-            alert('Por favor, responda a pergunta antes de continuar.');
-            return;
-        }
+		[telaAvaliacao, telaResultado].forEach(t => {
+			if (t) t.classList.add('hidden');
+		});
+		if (telaParaMostrar) telaParaMostrar.classList.remove('hidden');
+	}
+	// === FIM ADIÇÕES ===
 
-        perguntaAtual++;
-        atualizarPergunta();
-    });
+	// Garantir estado inicial do dataset
+	if (!telaAvaliacao.dataset.narrationActive) telaAvaliacao.dataset.narrationActive = 'false';
+	if (!telaResultado.dataset.narrationActive) telaResultado.dataset.narrationActive = 'false';
 
-    voltarPerguntaBtn.addEventListener('click', () => {
-        if (perguntaAtual > 0) {
-            perguntaAtual--;
-            atualizarPergunta();
-        }
-    });
+	// Referências para paginação
+	const perguntas = Array.from(document.querySelectorAll('.pergunta-item'));
+	let perguntaAtual = 0;
 
-    // Verifica se todas as perguntas foram respondidas - se não, foca na primeira pendente
-    function todasRespostasPreenchidas() {
-        const nomes = ['p1', 'p2', 'p3'];
-        for (let i = 0; i < nomes.length; i++) {
-            const name = nomes[i];
-            const radios = avaliacaoForm.querySelectorAll(`input[name="${name}"]`);
-            const answered = Array.from(radios).some(r => r.checked);
-            if (!answered) {
-                // Se faltar, leva o usuário à pergunta faltante e retorna false
-                perguntaAtual = i;
-                atualizarPergunta();
-                // Move foco para a primeira opção dessa pergunta para acessibilidade
-                const firstInput = perguntas[perguntaAtual].querySelector('input[type="radio"]');
-                if (firstInput) firstInput.focus();
-                return false;
-            }
-        }
-        return true;
-    }
+	function atualizarPergunta() {
+		perguntas.forEach((pergunta, index) => {
+			pergunta.classList.toggle('hidden', index !== perguntaAtual);
+		});
+		// mostrar/ocultar botão voltar de pergunta se existir
+		if (voltarPerguntaBtn) voltarPerguntaBtn.classList.toggle('hidden', perguntaAtual === 0);
 
-    // adiciona variavel para guardar o ultimo resultado calculado
-    let ultimoTotal = null;
+		// foco na primeira opção da pergunta atual
+		const firstInput = perguntas[perguntaAtual].querySelector('input[type="radio"]');
+		if (firstInput) firstInput.focus();
+	}
 
-    /**
-     * Calcula a pontuação e exibe a tela de resultado.
-     * event pode ser undefined quando chamado diretamente pelo botão.
-     */
-    function calcularResultado(event) {
-        if (event) event.preventDefault();
+	// voltar pergunta
+	if (voltarPerguntaBtn) {
+		voltarPerguntaBtn.addEventListener('click', () => {
+			if (perguntaAtual > 0) {
+				perguntaAtual--;
+				// limpar confirmação ao voltar
+				selecaoConfirmada.clear();
+				atualizarPergunta();
+			}
+		});
+	}
 
-        // Valida respostas; se alguma faltar, todasRespostasPreenchidas já redireciona para a pergunta
-        if (!todasRespostasPreenchidas()) {
-            alert('Por favor, responda todas as perguntas para ver o resultado.');
-            return;
-        }
+	// adiciona variavel para guardar o ultimo resultado calculado
+	let ultimoTotal = null;
 
-        // Soma das pontuações
-        let total = 0;
-        const dadosForm = new FormData(avaliacaoForm);
-        for (let value of dadosForm.values()) {
-            total += parseInt(value);
-        }
+	/**
+	 * Calcula a pontuação e exibe a tela de resultado.
+	 */
+	function calcularResultado(event) {
+		if (event) event.preventDefault();
 
-        // Guarda último total para uso pela narração
-        ultimoTotal = total;
-        pontuacaoFinalSpan.textContent = total;
+		// Valida respostas
+		let todasRespondidas = true;
+		const nomes = ['p1', 'p2', 'p3'];
+		for (let i = 0; i < nomes.length; i++) {
+			const name = nomes[i];
+			const radios = avaliacaoForm.querySelectorAll(`input[name="${name}"]`);
+			const answered = Array.from(radios).some(r => r.checked);
+			if (!answered) {
+				todasRespondidas = false;
+				perguntaAtual = i;
+				atualizarPergunta();
+				break;
+			}
+		}
 
-        // Define cor do círculo com base na pontuação
-        circuloPontuacao.style.backgroundColor = (total >= 5) ? VERMELHO : (total >= 2) ? AMARELO : VERDE;
+		if (!todasRespondidas) {
+			alert('Por favor, responda todas as perguntas para ver o resultado.');
+			return;
+		}
 
-        // Atualiza título e mensagem de dica com base na pontuação
-        let titulo, dica;
-        if (total >= 5) {
-            titulo = 'Alto risco de compra impulsiva';
-            dica = 'Considere esperar 24 horas antes de realizar a compra. Avalie se é realmente necessário.';
-        } else if (total >= 2) {
-            titulo = 'Atenção: compra por impulso possível';
-            dica = 'Reflita sobre a compra. Pergunte-se se é um desejo momentâneo ou uma necessidade real.';
-        } else {
-            titulo = 'Compra consciente e planejada';
-            dica = 'Ótimo trabalho! Continue assim, planejando suas compras e evitando impulsos.';
-        }
-        tituloResultado.textContent = titulo;
-        mensagemDica.textContent = dica;
+		// Soma das pontuações
+		let total = 0;
+		const dadosForm = new FormData(avaliacaoForm);
+		for (let value of dadosForm.values()) {
+			total += parseInt(value);
+		}
 
-        // Troca para a tela de resultado
-        trocarTela(telaResultado);
+		ultimoTotal = total;
+		pontuacaoFinalSpan.textContent = total;
 
-        // Se narração de resultado estiver ativa, ler com base no ultimoTotal
-        if (telaResultado.dataset.narrationActive === 'true') {
-            narrarResultado(ultimoTotal);
-        }
-    }
+		// Define cor do círculo
+		circuloPontuacao.style.backgroundColor = (total >= 5) ? VERMELHO : (total >= 2) ? AMARELO : VERDE;
 
-    // Função para narrar o resultado com variação conforme pontuação
-    function narrarResultado(totalParam) {
-        // usa totalParam, ou ultimoTotal, ou o valor na tela
-        const total = (typeof totalParam === 'number') ? totalParam : (typeof ultimoTotal === 'number' ? ultimoTotal : parseInt(pontuacaoFinalSpan.textContent || '0'));
+		// Atualiza título e mensagem
+		let titulo, dica;
+		if (total >= 5) {
+			titulo = 'Alto risco de compra impulsiva';
+			dica = 'Considere esperar 24 horas antes de realizar a compra. Avalie se é realmente necessário.';
+		} else if (total >= 2) {
+			titulo = 'Atenção: compra por impulso possível';
+			dica = 'Reflita sobre a compra. Pergunte-se se é um desejo momentâneo ou uma necessidade real.';
+		} else {
+			titulo = 'Compra consciente e planejada';
+			dica = 'Ótimo trabalho! Continue assim, planejando suas compras e evitando impulsos.';
+		}
+		tituloResultado.textContent = titulo;
+		mensagemDica.textContent = dica;
 
-        let mensagem;
-        if (total >= 5) {
-            mensagem = `Você obteve ${total} pontos. Alto risco de compra impulsiva. ${mensagemDica.textContent}`;
-        } else if (total >= 2) {
-            mensagem = `Você obteve ${total} pontos. Atenção necessária. ${mensagemDica.textContent}`;
-        } else {
-            mensagem = `Você obteve ${total} pontos. Compra consciente e planejada. ${mensagemDica.textContent}`;
-        }
+		trocarTela(telaResultado);
 
-        // Atualiza os data-audio para permitir que quem clicar leia esses elementos
-        document.getElementById('pontuacao-final').dataset.audio = `Pontuação final ${total}`;
-        document.getElementById('titulo-resultado').dataset.audio = document.getElementById('titulo-resultado').textContent || '';
-        document.getElementById('mensagem-dica').dataset.audio = mensagemDica.textContent || '';
+		if (telaResultado.dataset.narrationActive === 'true') {
+			narrarResultado(ultimoTotal);
+		}
+	}
 
-        // Narra a mensagem
-        if (speechSupported) narrarTexto(mensagem);
-    }
+	// Função para narrar o resultado
+	function narrarResultado(totalParam) {
+		const total = (typeof totalParam === 'number') ? totalParam : (typeof ultimoTotal === 'number' ? ultimoTotal : parseInt(pontuacaoFinalSpan.textContent || '0'));
 
-    // Garantir que o botão "Ver resultado" acione a mesma lógica do submit
-    if (verResultadoBtn) {
-        verResultadoBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            calcularResultado(e); // não usamos stopPropagation — evita interferências
-        });
-    }
+		let mensagem;
+		if (total >= 5) {
+			mensagem = `Você obteve ${total} pontos. Alto risco de compra impulsiva. ${mensagemDica.textContent}`;
+		} else if (total >= 2) {
+			mensagem = `Você obteve ${total} pontos. Atenção necessária. ${mensagemDica.textContent}`;
+		} else {
+			mensagem = `Você obteve ${total} pontos. Compra consciente e planejada. ${mensagemDica.textContent}`;
+		}
 
-    // Mantém listener de submit
-    avaliacaoForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        calcularResultado(e);
-    });
+		document.getElementById('pontuacao-final').dataset.audio = `Pontuação final ${total}`;
+		document.getElementById('titulo-resultado').dataset.audio = document.getElementById('titulo-resultado').textContent || '';
+		document.getElementById('mensagem-dica').dataset.audio = mensagemDica.textContent || '';
 
-    // ================= RESULT SCREEN BUTTONS =================
-    // Voltar ao início — limpa tudo e mostra tela inicial
-    if (voltarAoInicioResultadoBtn) {
-        voltarAoInicioResultadoBtn.addEventListener('click', () => {
-            resetarTudo();
-        });
-    }
+		if (speechSupported) narrarTexto(mensagem);
+	}
 
-    // Responder novamente — reseta formulário, volta para tela de avaliação
-    if (responderNovamenteBtn) {
-        responderNovamenteBtn.addEventListener('click', () => {
-            // Limpa campos e checkbox/ radio
-            avaliacaoForm.reset();
-            document.querySelectorAll('input[type="radio"]').forEach(radio => {
-                radio.checked = false;
-            });
+	// Mantém listener de submit
+	avaliacaoForm.addEventListener('submit', (e) => {
+		e.preventDefault();
+		calcularResultado(e);
+	});
 
-            // Volta para a primeira pergunta e mostra a tela de avaliação
-            perguntaAtual = 0;
-            atualizarPergunta();
-            trocarTela(telaAvaliacao);
-        });
-    }
+	// ================= RESULT SCREEN BUTTONS =================
+	// Removido listener para 'voltarAoInicioResultadoBtn' (botão removido do HTML)
 
-    // Detecta suporte de síntese de fala
-    const speechSupported = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+	// Responder novamente — reseta formulário, volta para tela de avaliação
+	if (responderNovamenteBtn) {
+		responderNovamenteBtn.addEventListener('click', () => {
+			// Limpa campos e checkbox/ radio
+			avaliacaoForm.reset();
+			document.querySelectorAll('input[type="radio"]').forEach(radio => {
+				radio.checked = false;
+			});
+			perguntaAtual = 0;
+			selecaoConfirmada.clear();
+			atualizarPergunta();
+			trocarTela(telaAvaliacao);
+		});
+	}
 
-    // Função para narrar texto (com cancelamento de fala anterior e tentativa de voz pt-BR)
-    function narrarTexto(texto) {
-        if (!speechSupported) {
-            console.warn('Síntese de fala não suportada neste navegador.');
-            return;
-        }
-        // Cancela qualquer fala em andamento antes de falar o novo texto
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(texto);
-        utterance.lang = 'pt-BR';
+	// Mapa para armazenar handlers de leitura por clique (mantido)
+	const clickNarrationHandlers = new Map();
 
-        // Tenta escolher voz pt-BR se disponível (getVoices pode retornar vazia inicialmente)
-        const voices = window.speechSynthesis.getVoices();
-        utterance.voice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('pt')) || null;
+	// Adiciona funções ausentes para ativar/desativar a leitura por clique (usadas pelos botões de áudio)
+	function enableClickNarration(root) {
+		if (!root || !speechSupported) return;
+		// NÃO incluir .opcao-label aqui para evitar dupla leitura; vamos narrar opções explicitamente no clickHandler
+		const items = root.querySelectorAll('.audio-clickable:not(.opcao-label)');
+		items.forEach(item => {
+			if (clickNarrationHandlers.has(item)) return;
+			const handler = (e) => {
+				const textoRaw = item.dataset.audio || item.textContent || '';
+				const texto = removerIndicadorPontos(textoRaw);
+				if (texto) narrarTexto(texto);
+			};
+			item.addEventListener('pointerdown', handler);
+			clickNarrationHandlers.set(item, handler);
+			item.setAttribute('aria-pressed', 'true');
+		});
+	}
 
-        window.speechSynthesis.speak(utterance);
-    }
+	function disableClickNarration(root) {
+		if (!root) return;
+		// remove handlers apenas dos elementos que adicionamos
+		const items = root.querySelectorAll('.audio-clickable:not(.opcao-label)');
+		items.forEach(item => {
+			const handler = clickNarrationHandlers.get(item);
+			if (handler) {
+				item.removeEventListener('pointerdown', handler);
+				clickNarrationHandlers.delete(item);
+				item.removeAttribute('aria-pressed');
+			}
+		});
+		if (speechSupported) window.speechSynthesis.cancel();
+	}
 
-    // Helper: remove a parte de "(N ponto(s))" do texto, caso exista
-    function removerIndicadorPontos(texto) {
-        return texto.replace(/\(\s*\d+\s*pontos?\s*\)/gi, '').trim();
-    }
+	// controle de confirmações quando audiodescrição ativa
+	const selecaoConfirmada = new Map(); // chave: indexPergunta -> lastSelectedOptionId
 
-    // Mapa para armazenar handlers adicionados (para que possamos remover)
-    const clickNarrationHandlers = new Map();
+	// Nova flag: suprime narração imediata após avançar (evita repetição ao trocar pergunta)
+	let suppressNarration = false;
 
-    // Ativa leitura ao pressionar (pointerdown) nos elementos .audio-clickable dentro do root
-    // pointerdown dá resposta imediata e não impede comportamento de labels/inputs
-    function enableClickNarration(root) {
-        if (!speechSupported) return; // se não suportado, não adiciona handler
+	/**
+	 * Avança para a próxima pergunta / resultado
+	 */
+	function avancarPergunta() {
+		// garante que a pergunta atual tem resposta
+		const radios = perguntas[perguntaAtual].querySelectorAll('input[type="radio"]');
+		const isRespondido = Array.from(radios).some(r => r.checked);
+		if (!isRespondido) return;
 
-        const items = root.querySelectorAll('.audio-clickable');
-        items.forEach(item => {
-            if (clickNarrationHandlers.has(item)) return;
-            const handler = (e) => {
-                const textoRaw = item.dataset.audio || item.textContent || '';
-                const texto = removerIndicadorPontos(textoRaw);
-                if (texto) narrarTexto(texto);
-            };
-            item.addEventListener('pointerdown', handler);
-            clickNarrationHandlers.set(item, handler);
-            item.setAttribute('aria-pressed', 'true');
-        });
-    }
+		// suprime narração por curto período para evitar que o clique "vaze" para a próxima pergunta
+		suppressNarration = true;
 
-    // Desativa leitura ao clicar nos elementos .audio-clickable dentro do root
-    function disableClickNarration(root) {
-        const items = root.querySelectorAll('.audio-clickable');
-        items.forEach(item => {
-            const handler = clickNarrationHandlers.get(item);
-            if (handler) {
-                item.removeEventListener('pointerdown', handler);
-                clickNarrationHandlers.delete(item);
-                item.removeAttribute('aria-pressed');
-            }
-        });
+		if (perguntaAtual === perguntas.length - 1) {
+			calcularResultado();
+		} else {
+			perguntaAtual++;
+			// limpar confirmações para nova pergunta
+			selecaoConfirmada.delete(perguntaAtual);
+			atualizarPergunta();
+		}
 
-        // Cancela qualquer fala em andamento quando desabilita o modo
-        if (speechSupported) window.speechSynthesis.cancel();
-    }
+		// limpa a supressão após breve intervalo (ajuste se necessário)
+		setTimeout(() => { suppressNarration = false; }, 350);
+	}
 
-    // Atualiza os botões de áudio — desabilita se não houver suporte
-    const audioBtns = ['audioDescricaoInicial', 'audioDescricaoAvaliacao', 'audioDescricaoResultado'];
-    audioBtns.forEach(id => {
-        const btn = document.getElementById(id);
-        if (!speechSupported && btn) {
-            btn.disabled = true;
-            btn.title = 'Áudio descrição não suportada no seu navegador';
-            btn.style.opacity = '0.6';
-            btn.style.cursor = 'not-allowed';
-        }
-    });
+	/**
+	 * Registra listeners:
+	 * - change nos inputs: quando audiodescrição DESATIVADA -> avança automaticamente.
+	 * - click no label: quando audiodescrição ATIVADA -> primeiro clique apenas seleciona e pede confirmação; segundo clique no mesmo rótulo avança.
+	 */
+	function adicionarListenersOpcoes() {
+		perguntas.forEach((pergunta, indexPergunta) => {
+			const labels = pergunta.querySelectorAll('.opcao-label');
+			labels.forEach((label, idx) => {
+				const inputRadio = label.querySelector('input[type="radio"]');
+				if (!inputRadio) return;
 
-    // Alterna a funcionalidade de click narration para a tela de avaliação
-    document.getElementById('audioDescricaoAvaliacao').addEventListener('click', () => {
-        const btn = document.getElementById('audioDescricaoAvaliacao');
-        const isActive = telaAvaliacao.dataset.narrationActive === 'true';
+				// remover antigos listeners (se houver)
+				if (inputRadio._changeHandler) inputRadio.removeEventListener('change', inputRadio._changeHandler);
+				if (label._clickHandler) label.removeEventListener('click', label._clickHandler);
 
-        if (isActive) {
-            disableClickNarration(telaAvaliacao);
-            telaAvaliacao.dataset.narrationActive = 'false';
-            btn.textContent = 'Ouvir descrição da tela';
-            btn.setAttribute('aria-pressed', 'false');
-        } else {
-            enableClickNarration(telaAvaliacao);
-            telaAvaliacao.dataset.narrationActive = 'true';
-            btn.textContent = 'Desativar leitura por clique';
-            btn.setAttribute('aria-pressed', 'true');
-            // narra a tela somente ao ativar
-            if (speechSupported) narrarTexto(descricoes.avaliacao);
-        }
-    });
+				// change: avanço automático quando audiodescrição desligada (mantido)
+				const changeHandler = (e) => {
+					const audioAtivo = telaAvaliacao.dataset.narrationActive === 'true';
+					if (!audioAtivo && inputRadio.checked) {
+						setTimeout(() => avancarPergunta(), 120);
+					}
+				};
+				inputRadio.addEventListener('change', changeHandler);
+				inputRadio._changeHandler = changeHandler;
 
-    // Inicial — alterna sem narrar ao desativar
-    document.getElementById('audioDescricaoInicial').addEventListener('click', () => {
-        const btn = document.getElementById('audioDescricaoInicial');
-        const isActive = telaInicial.dataset.narrationActive === 'true';
+				// click no label: quando audiodescrição ativada, usar confirmação
+				const clickHandler = (e) => {
+					const audioAtivo = telaAvaliacao.dataset.narrationActive === 'true';
 
-        if (isActive) {
-            disableClickNarration(telaInicial);
-            telaInicial.dataset.narrationActive = 'false';
-            btn.textContent = 'Ouvir descrição da tela';
-            btn.setAttribute('aria-pressed', 'false');
-        } else {
-            enableClickNarration(telaInicial);
-            telaInicial.dataset.narrationActive = 'true';
-            btn.textContent = 'Desativar leitura por clique';
-            btn.setAttribute('aria-pressed', 'true');
-            if (speechSupported) narrarTexto(descricoes.inicial);
-        }
-    });
+					// se suprimido (recém avançou), não narrar nem pedir confirmação
+					if (suppressNarration) {
+						e.preventDefault();
+						e.stopPropagation();
+						inputRadio.focus();
+						return;
+					}
 
-    // Resultado — alterna sem narrar ao desativar; quando ativar, narrar o resultado completo (usa ultimoTotal)
-    const audioResultadoBtn = document.getElementById('audioDescricaoResultado');
-    if (audioResultadoBtn) {
-        audioResultadoBtn.addEventListener('click', () => {
-            const isActive = telaResultado.dataset.narrationActive === 'true';
+					// sem audiodescrição: deixamos o comportamento nativo marcar o radio e disparar 'change'
+					if (!audioAtivo) {
+						return;
+					}
 
-            if (isActive) {
-                // Desativa sem narrar; cancela áudio atual
-                disableClickNarration(telaResultado);
-                telaResultado.dataset.narrationActive = 'false';
-                audioResultadoBtn.textContent = 'Ouvir descrição da tela';
-                audioResultadoBtn.setAttribute('aria-pressed', 'false');
-            } else {
-                // Ativa e narra apenas ao ativar
-                enableClickNarration(telaResultado);
-                telaResultado.dataset.narrationActive = 'true';
-                audioResultadoBtn.textContent = 'Desativar leitura por clique';
-                audioResultadoBtn.setAttribute('aria-pressed', 'true');
-                // Narra o resultado usando o ultimo total se houver
-                if (speechSupported) {
-                    if (typeof ultimoTotal === 'number') {
-                        narrarResultado(ultimoTotal);
-                    } else {
-                        // Se não houver total calculado ainda, narra uma mensagem geral da tela
-                        narrarTexto(descricoes.resultado);
-                    }
-                }
-            }
-        });
-    }
+					// audiodescrição ON: comportamento de confirmação em 2 cliques
+					const thisId = `q${indexPergunta}-opt${idx}`;
+					const lastSelectedId = selecaoConfirmada.get(indexPergunta);
 
-    // Descrições das telas
-    const descricoes = {
-        inicial: "Bem-vindo ao Minhas Finanças Conscientes. Aqui você pode avaliar suas compras com base em desejo, reflexão e economia.",
-        avaliacao: "Esta é a escala de avaliação de compra. Responda às perguntas para obter uma análise da sua escolha.",
-        resultado: "Esta é a tela de resultados. Aqui você verá sua pontuação e dicas para melhorar suas decisões financeiras."
-    };
+					// Texto da opção para narrar (se houver data-audio no label)
+					const optionAudio = removerIndicadorPontos(label.dataset.audio || label.textContent || '');
 
-    // ======================= EVENT LISTENERS =======================
-    
-    iniciarAvaliacaoBtn.addEventListener('click', () => {
-        trocarTela(telaAvaliacao);
-    });
+					if (lastSelectedId !== thisId) {
+						// primeiro clique: marca manualmente (porque vamos prevenir a mudança nativa) e narra instrução
+						inputRadio.checked = true;
+						selecaoConfirmada.set(indexPergunta, thisId);
+						if (speechSupported) {
+							const mensagem = optionAudio ? `${optionAudio}. Clique novamente para confirmar` : 'Clique novamente para confirmar';
+							narrarTexto(mensagem);
+						}
+						e.preventDefault();
+						e.stopPropagation();
+						inputRadio.focus();
+						return;
+					} else {
+						// segundo clique no mesmo rótulo: confirma e avança sem repetir a instrução
+						selecaoConfirmada.delete(indexPergunta);
+						suppressNarration = true;
+						setTimeout(() => avancarPergunta(), 100);
+					}
+				};
+				label.addEventListener('click', clickHandler);
+				label._clickHandler = clickHandler;
+			});
+		});
+	}
 
-    voltarAoInicioBtn.addEventListener('click', resetarTudo);
-    voltarAoInicioResultadoBtn.addEventListener('click', resetarTudo);
-    responderNovamenteBtn.addEventListener('click', () => {
-        avaliacaoForm.reset();
-        trocarTela(telaAvaliacao);
-    });
-    
-    // Inicializa na tela inicial por padrão
-    trocarTela(telaInicial);
+	// Alterna audiodescrição da avaliação (mantém e limpa handlers antigos de leitura)
+	const audioDescricaoAvaliacaoBtn = document.getElementById('audioDescricaoAvaliacao');
+	if (audioDescricaoAvaliacaoBtn) {
+		audioDescricaoAvaliacaoBtn.addEventListener('click', () => {
+			const isActive = telaAvaliacao.dataset.narrationActive === 'true';
+			if (isActive) {
+				disableClickNarration(telaAvaliacao);
+				telaAvaliacao.dataset.narrationActive = 'false';
+				audioDescricaoAvaliacaoBtn.textContent = 'Ouvir descrição da tela';
+				audioDescricaoAvaliacaoBtn.setAttribute('aria-pressed', 'false');
+				selecaoConfirmada.clear();
+			} else {
+				enableClickNarration(telaAvaliacao);
+				telaAvaliacao.dataset.narrationActive = 'true';
+				audioDescricaoAvaliacaoBtn.textContent = 'Desativar leitura por clique';
+				audioDescricaoAvaliacaoBtn.setAttribute('aria-pressed', 'true');
+				selecaoConfirmada.clear();
+				if (speechSupported) narrarTexto('Esta é a escala de avaliação de compra. Responda às perguntas para obter uma análise da sua escolha.');
+			}
+			// re-registra listeners (evita duplicações)
+			adicionarListenersOpcoes();
+		});
+	}
 
-    /**
-     * Reseta o formulário e volta para a tela de início.
-     */
-    function resetarTudo() {
-        avaliacaoForm.reset();
-        document.querySelectorAll('input[type="radio"]').forEach(radio => {
-            radio.checked = false;
-        });
-        // Limpa pontuação exibida
-        pontuacaoFinalSpan.textContent = '0';
-        tituloResultado.textContent = '';
-        mensagemDica.textContent = '';
-        perguntaAtual = 0;
-        atualizarPergunta();
-        trocarTela(telaInicial);
-    }
+	// Resultado — alterna audiodescrição (mantém comportamento anterior)
+	const audioResultadoBtn = document.getElementById('audioDescricaoResultado');
+	if (audioResultadoBtn) {
+		audioResultadoBtn.addEventListener('click', () => {
+			const isActive = telaResultado.dataset.narrationActive === 'true';
+			if (isActive) {
+				disableClickNarration(telaResultado);
+				telaResultado.dataset.narrationActive = 'false';
+				audioResultadoBtn.textContent = 'Ouvir descrição da tela';
+				audioResultadoBtn.setAttribute('aria-pressed', 'false');
+			} else {
+				enableClickNarration(telaResultado);
+				telaResultado.dataset.narrationActive = 'true';
+				audioResultadoBtn.textContent = 'Desativar leitura por clique';
+				audioResultadoBtn.setAttribute('aria-pressed', 'true');
+				if (speechSupported) {
+					if (typeof ultimoTotal === 'number') {
+						narrarResultado(ultimoTotal);
+					} else {
+						narrarTexto('Esta é a tela de resultados. Aqui você verá sua pontuação e dicas para melhorar suas decisões financeiras.');
+					}
+				}
+			}
+		});
+	}
 
-    // Garante que o botão "Voltar ao início" na tela de avaliação funcione (robusto)
-    if (voltarAoInicioBtn) {
-        voltarAoInicioBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            resetarTudo();
-        });
-    }
+	// Event listeners para botões de resultado
+	// if (voltarAoInicioResultadoBtn) {
+	//     voltarAoInicioResultadoBtn.addEventListener('click', () => resetarTudo());
+	// }
+	if (responderNovamenteBtn) {
+		responderNovamenteBtn.addEventListener('click', () => {
+			avaliacaoForm.reset();
+			document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+			perguntaAtual = 0;
+			selecaoConfirmada.clear();
+			atualizarPergunta();
+			trocarTela(telaAvaliacao);
+		});
+	}
 
-    // Garante que o botão "Voltar ao início" na tela de resultado funcione (robusto)
-    if (voltarAoInicioResultadoBtn) {
-        voltarAoInicioResultadoBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            resetarTudo();
-        });
-    }
+	// reset/initialização (mantém lógica anterior)
+	function resetarTudo() {
+		// Cancela qualquer narração em andamento ao resetar
+		if (speechSupported && window.speechSynthesis) {
+			try { window.speechSynthesis.cancel(); } catch (e) { /* noop */ }
+		}
+
+		avaliacaoForm.reset();
+		document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+		pontuacaoFinalSpan.textContent = '0';
+		tituloResultado.textContent = '';
+		mensagemDica.textContent = '';
+		perguntaAtual = 0;
+		selecaoConfirmada.clear();
+		atualizarPergunta();
+		trocarTela(telaAvaliacao);
+	}
+
+	// Inicializa telas, listeners
+	trocarTela(telaAvaliacao);
+	adicionarListenersOpcoes();
 });

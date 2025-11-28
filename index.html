@@ -26,33 +26,7 @@
 
     <div class="container" id="app-container">
 
-        <div id="tela-inicial" class="screen">
-            <div class="card-inicial">
-                <span class="material-icons shopping-icon">local_mall</span>
-                <h1>Minhas Finanças Conscientes</h1>
-                <p class="description">
-                    Tome decisões financeiras com o coração e a razão. Use nossa escala para avaliar suas compras.
-                </p>
-                <div class="icon-group">
-                    <div class="icon-item">
-                        <span class="material-icons">favorite_border</span>
-                        <p>Desejo</p>
-                    </div>
-                    <div class="icon-item">
-                        <span class="material-icons">lightbulb_outline</span>
-                        <p>Reflexão</p>
-                    </div>
-                    <div class="icon-item">
-                        <span class="material-icons">savings</span>
-                        <p>Economia</p>
-                    </div>
-                </div>
-                <button id="iniciarAvaliacao" class="btn-principal">Quero consultar minha escolha de compra</button>
-                <button id="audioDescricaoInicial" class="btn-acessibilidade">Ouvir descrição da tela</button>
-            </div>
-        </div>
-
-        <div id="tela-avaliacao" class="screen hidden">
+        <div id="tela-avaliacao" class="screen">
             <h2 class="title-avaliacao">Escala de Avaliação de Compra</h2>
             <p class="subtitle-avaliacao">Responda honestamente para obter uma avaliação precisa</p>
 
@@ -87,8 +61,6 @@
 
                 <div class="botoes-form">
                     <button type="button" id="voltarPergunta" class="btn-secundario hidden">Voltar</button>
-                    <button type="button" id="proximaPergunta" class="btn-principal">Próxima</button>
-                    <button type="submit" class="btn-principal hidden" id="verResultadoBtn">Ver resultado ></button>
                 </div>
             </form>
             <button id="audioDescricaoAvaliacao" class="btn-acessibilidade">Ouvir descrição da tela</button>
@@ -122,7 +94,6 @@
                 </div>
 
                 <div class="botoes-resultado">
-                    <button type="button" id="voltarAoInicioResultado" class="btn-secundario">Voltar ao início</button>
                     <button type="button" id="responderNovamente" class="btn-secundario">Responder novamente</button>
                 </div>
             </div>
