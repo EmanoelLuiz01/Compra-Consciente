@@ -96,6 +96,25 @@ if (responderNovamenteBtn) {
   });
 }
 
+function trocarTela(telaParaMostrar) {
+  // Cancela qualquer narração em andamento ao trocar de tela
+  if (speechSupported && window.speechSynthesis) {
+    try { window.speechSynthesis.cancel(); } catch (e) { /* noop */ }
+  }
+
+  [telaAvaliacao, telaResultado].forEach(t => {
+    if (t) t.classList.add('hidden');
+  });
+  if (telaParaMostrar) telaParaMostrar.classList.remove('hidden');
+
+  // === NOVO: se for a tela de avaliação, embaralhar perguntas ===
+  if (telaParaMostrar === telaAvaliacao) {
+    perguntas = embaralhar(Array.from(document.querySelectorAll('.pergunta-item')));
+    perguntaAtual = 0;
+    atualizarPergunta();
+  }
+}
+
 	function atualizarPergunta() {
 		perguntas.forEach((pergunta, index) => {
 			pergunta.classList.toggle('hidden', index !== perguntaAtual);
