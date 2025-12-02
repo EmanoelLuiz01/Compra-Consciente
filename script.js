@@ -63,38 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	if (!telaResultado.dataset.narrationActive) telaResultado.dataset.narrationActive = 'false';
 
 	// Referências para paginação
-	
-
-// Função para embaralhar
-// Função para embaralhar
-function embaralhar(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
-
-// já cria o array embaralhado na primeira vez
-let perguntas = embaralhar(Array.from(document.querySelectorAll('.pergunta-item')));
-
-let perguntaAtual = 0;
-
-// Listener único para "Responder novamente"
-if (responderNovamenteBtn) {
-  responderNovamenteBtn.addEventListener('click', () => {
-    avaliacaoForm.reset();
-    document.querySelectorAll('input[type="radio"]').forEach(radio => radio.checked = false);
-    perguntaAtual = 0;
-    selecaoConfirmada.clear();
-
-    // embaralha novamente as perguntas
-    perguntas = embaralhar(perguntas);
-
-    atualizarPergunta();
-    trocarTela(telaAvaliacao);
-  });
-}
+	const perguntas = Array.from(document.querySelectorAll('.pergunta-item'));
+	let perguntaAtual = 0;
 
 	function atualizarPergunta() {
 		perguntas.forEach((pergunta, index) => {
