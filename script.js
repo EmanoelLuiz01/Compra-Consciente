@@ -75,45 +75,195 @@ function embaralhar(array) {
   return array;
 }
 
-// já cria o array embaralhado na primeira vez
-let perguntas = embaralhar(Array.from(document.querySelectorAll('.pergunta-item')));
-
-let perguntaAtual = 0;
-
-// Listener único para "Responder novamente"
-if (responderNovamenteBtn) {
-  responderNovamenteBtn.addEventListener('click', () => {
-    avaliacaoForm.reset();
-    document.querySelectorAll('input[type="radio"]').forEach(radio => radio.checked = false);
-    perguntaAtual = 0;
-    selecaoConfirmada.clear();
-
-    // embaralha novamente as perguntas
-    perguntas = embaralhar(perguntas);
-
-    atualizarPergunta();
-    trocarTela(telaAvaliacao);
-  });
+// Função para embaralhar/selecionar n aleatórias
+function pickRandom(array, n) {
+	// copia e embaralha
+	const copy = array.slice();
+	for (let i = copy.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[copy[i], copy[j]] = [copy[j], copy[i]];
+	}
+	return copy.slice(0, n);
 }
 
-function trocarTela(telaParaMostrar) {
-  // Cancela qualquer narração em andamento ao trocar de tela
-  if (speechSupported && window.speechSynthesis) {
-    try { window.speechSynthesis.cancel(); } catch (e) { /* noop */ }
-  }
+// Adicione aqui quantas perguntas quiser; o app sempre mostrará 3 aleatórias.
+const QUESTIONS = [
+	{
+		id: 'q-risk',
+		text: 'Eu tenho risco de ficar sem dinheiro até receber novamente?',
+		options: [
+			{ text: 'Sim', value: '2', emoji: '😀' },
+			{ text: 'Em dúvida', value: '1', emoji: '🤔' },
+			{ text: 'Não', value: '0', emoji: '😞' }
+		]
+	},
+	{
+		id: 'q-feeling',
+		text: 'Estou me sentindo bem e confortável em fazer a compra agora?',
+		options: [
+			{ text: 'Sim', value: '0', emoji: '😀' },
+			{ text: 'Em dúvida', value: '1', emoji: '🤔' },
+			{ text: 'Não', value: '2', emoji: '😞' }
+		]
+	},
+	{
+		id: 'q-substitute',
+		text: 'Eu consigo substituir essa compra por algo que já tenho?',
+		options: [
+			{ text: 'Sim', value: '0', emoji: '😀' },
+			{ text: 'Em dúvida', value: '1', emoji: '🤔' },
+			{ text: 'Não', value: '2', emoji: '😞' }
+		]
+	},
+	{
+		id: 'q-oportunidade',
+		text: 'Se eu não comprar, este valor pode ser melhor investido, poupado ou direcionado para quitar uma dívida importante?',
+		options: [
+			{ text: 'Sim', value: '0', emoji: '💰' },
+			{ text: 'Talvez', value: '1', emoji: '🤔' },
+			{ text: 'Não', value: '2', emoji: '❌' }
+		]
+	},
+	{
+		id: 'q-essencial',
+		text: 'Esta despesa irá comprometer de alguma forma o orçamento destinado a contas essenciais (aluguel, alimentação, saúde) neste ou no próximo mês?',
+		options: [
+			{ text: 'Sim', value: '2', emoji: '⚠️' },
+			{ text: 'Talvez', value: '1', emoji: '🤔' },
+			{ text: 'Não', value: '0', emoji: '✅' }
+		]
+	},
+	{
+		id: 'q-esforco',
+		text: 'Quantas horas de trabalho foram necessárias para ganhar o valor deste item? Este item compensa esse tempo de esforço?',
+		options: [
+			{ text: 'Sim', value: '0', emoji: '💪' },
+			{ text: 'Talvez', value: '1', emoji: '🤔' },
+			{ text: 'Não', value: '2', emoji: '❌' }
+		]
+	},
+	// {
+	// 	id: 'q-emocao',
+	// 	text: 'Qual emoção (estresse, tédio, euforia) está me motivando a comprar?',
+	// 	options: [
+	// 		{ text: 'Nenhuma', value: '0', emoji: '😌' },
+	// 		{ text: 'Talvez', value: '1', emoji: '🤔' },
+	// 		{ text: 'Sim', value: '2', emoji: '😵' }
+	// 	]
+	// },
+	{
+		id: 'q-promocao',
+		text: 'Se eu não tivesse visto este produto agora (em promoção ou em exposição), eu teria me lembrado de procurá-lo ativamente hoje?',
+		options: [
+			{ text: 'Sim', value: '0', emoji: '✅' },
+			{ text: 'Talvez', value: '1', emoji: '🤔' },
+			{ text: 'Não', value: '2', emoji: '❌' }
+		]
+	},
+	{
+		id: 'q-emocao-influencia',
+		text: 'Há alguma emoção (ansiedade, felicidade, estresse, tristeza) me influenciando agora a querer fazer essa compra?',
+		options: [
+			{ text: 'Sim', value: '2', emoji: '😟' },
+			{ text: 'Talvez', value: '1', emoji: '🤔' },
+			{ text: 'Não', value: '0', emoji: '😌' }
+		]
+	},
+	{
+		id: 'q-esperar',
+		text: 'Preciso comprar agora ou posso esperar 30 dias?',
+		options: [
+			{ text: 'Posso esperar', value: '0', emoji: '⏳' },
+			{ text: 'Talvez', value: '1', emoji: '🤔' },
+			{ text: 'Preciso comprar agora', value: '2', emoji: '⚡' }
+		]
+	}
+];
+	
+	// Garantir que as variáveis sejam declaradas apenas uma vez
+	const perguntasContainer = document.getElementById('perguntasContainer');
+	const perguntaTemplate = document.getElementById('pergunta-template');
 
-  [telaAvaliacao, telaResultado].forEach(t => {
-    if (t) t.classList.add('hidden');
-  });
-  if (telaParaMostrar) telaParaMostrar.classList.remove('hidden');
+	let perguntas = []; // será preenchido com os elementos .pergunta-item gerados
+	let perguntaAtual = 0;
 
-  // === NOVO: se for a tela de avaliação, embaralhar perguntas ===
-  if (telaParaMostrar === telaAvaliacao) {
-    perguntas = embaralhar(Array.from(document.querySelectorAll('.pergunta-item')));
-    perguntaAtual = 0;
-    atualizarPergunta();
-  }
-}
+	// Renderiza 3 perguntas aleatórias a partir do array QUESTIONS
+	function renderPerguntas() {
+		// limpa container e estados
+		perguntasContainer.innerHTML = '';
+		selecaoConfirmada.clear();
+
+		// seleciona 3 perguntas aleatórias (se houver menos que 3, usa todas)
+		const chosen = pickRandom(QUESTIONS, Math.min(3, QUESTIONS.length));
+
+		// cria elementos no DOM a partir do template
+		chosen.forEach((qObj, idx) => {
+			const clone = perguntaTemplate.content.cloneNode(true);
+			const perguntaEl = clone.querySelector('.pergunta-item');
+			perguntaEl.dataset.question = idx + 1;
+			const titleEl = perguntaEl.querySelector('.question-title');
+			titleEl.textContent = qObj.text;
+			titleEl.dataset.audio = qObj.text;
+
+			const opcoesWrap = perguntaEl.querySelector('.opcoes-wrap');
+			opcoesWrap.innerHTML = ''; // remove placeholder se existir
+
+			qObj.options.forEach((opt) => {
+				const label = document.createElement('label');
+				label.className = 'opcao-label audio-clickable';
+				label.dataset.audio = opt.text;
+
+				const input = document.createElement('input');
+				input.type = 'radio';
+				input.name = `p${idx + 1}`;
+				input.value = opt.value;
+				input.required = true;
+
+				const spanText = document.createElement('span');
+				spanText.className = 'opcao-text';
+				spanText.textContent = opt.text + ' ';
+
+				const spanEmoji = document.createElement('span');
+				spanEmoji.className = 'pontos';
+				spanEmoji.textContent = opt.emoji || '';
+
+				label.appendChild(input);
+				label.appendChild(spanText);
+				label.appendChild(spanEmoji);
+
+				opcoesWrap.appendChild(label);
+			});
+
+			perguntasContainer.appendChild(clone);
+		});
+
+		// atualiza variável global de elementos de pergunta e reinicia estado de navegação
+		perguntas = Array.from(document.querySelectorAll('.pergunta-item'));
+		perguntaAtual = 0;
+		atualizarPergunta();
+
+		// re-registra listeners para opções (mantendo lógica de confirmação/narração)
+		adicionarListenersOpcoes();
+	}
+
+	// Ajusta trocarTela para, ao mostrar tela de avaliação, renderizar novas perguntas
+	// substitui/estende a versão anterior de trocarTela
+	function trocarTela(telaParaMostrar) {
+		// Cancela qualquer narração em andamento ao trocar de tela
+		if (speechSupported && window.speechSynthesis) {
+			try { window.speechSynthesis.cancel(); } catch (e) { /* noop */ }
+		}
+
+		[telaAvaliacao, telaResultado].forEach(t => {
+			if (t) t.classList.add('hidden');
+		});
+		if (telaParaMostrar) telaParaMostrar.classList.remove('hidden');
+
+		// se for a tela de avaliação, renderiza 3 perguntas aleatórias
+		if (telaParaMostrar === telaAvaliacao) {
+			renderPerguntas();
+		}
+	}
 
 	function atualizarPergunta() {
 		perguntas.forEach((pergunta, index) => {
@@ -242,7 +392,7 @@ function trocarTela(telaParaMostrar) {
 			});
 			perguntaAtual = 0;
 			selecaoConfirmada.clear();
-			atualizarPergunta();
+			renderPerguntas();
 			trocarTela(telaAvaliacao);
 		});
 	}
@@ -449,7 +599,7 @@ function trocarTela(telaParaMostrar) {
 			document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
 			perguntaAtual = 0;
 			selecaoConfirmada.clear();
-			atualizarPergunta();
+			renderPerguntas();
 			trocarTela(telaAvaliacao);
 		});
 	}

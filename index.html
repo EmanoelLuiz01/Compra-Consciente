@@ -31,33 +31,23 @@
             <p class="subtitle-avaliacao">Responda honestamente para obter uma avaliação precisa</p>
 
             <form id="avaliacaoForm">
-                
-                <div class="pergunta-item" data-question="1">
-                    <p class="question-title audio-clickable" data-audio="Pergunta 1. Eu tenho risco de ficar sem dinheiro até receber novamente?">Eu tenho risco de ficar sem dinheiro até receber novamente?</p>
-                    <div class="opcoes-wrap">
-                        <label class="opcao-label audio-clickable" data-audio="Sim"><input type="radio" name="p1" value="2" required> Sim <span class="pontos">😀 </span></label>
-                        <label class="opcao-label audio-clickable" data-audio="Em dúvida"><input type="radio" name="p1" value="1"> Em dúvida <span class="pontos">🤔</span></label>
-                        <label class="opcao-label audio-clickable" data-audio="Não"><input type="radio" name="p1" value="0"> Não <span class="pontos">😞</span></label>
-                    </div>
+                <div id="perguntasContainer" aria-live="polite">
+                    <!-- perguntas serão renderizadas aqui -->
                 </div>
 
-                <div class="pergunta-item hidden" data-question="2">
-                    <p class="question-title audio-clickable" data-audio="Pergunta 2. Estou me sentindo bem e confortável em fazer a compra agora?">Estou me sentindo bem e confortável em fazer a compra agora?</p>
-                    <div class="opcoes-wrap">
-                        <label class="opcao-label audio-clickable" data-audio="Sim"><input type="radio" name="p2" value="0" required> Sim <span class="pontos">😀</span></label>
-                        <label class="opcao-label audio-clickable" data-audio="Em dúvida"><input type="radio" name="p2" value="1"> Em dúvida <span class="pontos">🤔</span></label>
-                        <label class="opcao-label audio-clickable" data-audio="Não"><input type="radio" name="p2" value="2"> Não <span class="pontos">😞</span></label>
+                <!-- Template usado pelo script para criar cada pergunta dinamicamente -->
+                <template id="pergunta-template">
+                    <div class="pergunta-item" data-question="">
+                        <p class="question-title audio-clickable" data-audio=""></p>
+                        <div class="opcoes-wrap">
+                            <!-- cada opção será clonada -->
+                            <label class="opcao-label audio-clickable" data-audio="">
+                                <input type="radio" name="__NAME__" value="__VALUE__" required> 
+                                <span class="opcao-text">__OPTION_TEXT__</span> <span class="pontos">__EMOJI__</span>
+                            </label>
+                        </div>
                     </div>
-                </div>
-
-                <div class="pergunta-item hidden" data-question="3">
-                    <p class="question-title audio-clickable" data-audio="Pergunta 3. Eu consigo substituir essa compra por algo que já tenho?">Eu consigo substituir essa compra por algo que já tenho?</p>
-                    <div class="opcoes-wrap">
-                        <label class="opcao-label audio-clickable" data-audio="Sim"><input type="radio" name="p3" value="0" required> Sim <span class="pontos">😀</span></label>
-                        <label class="opcao-label audio-clickable" data-audio="Em dúvida"><input type="radio" name="p3" value="1"> Em dúvida <span class="pontos">🤔</span></label>
-                        <label class="opcao-label audio-clickable" data-audio="Não"><input type="radio" name="p3" value="2"> Não <span class="pontos">😞</span></label>
-                    </div>
-                </div>
+                </template>
 
                 <div class="botoes-form">
                     <button type="button" id="voltarPergunta" class="btn-secundario hidden">Voltar</button>
