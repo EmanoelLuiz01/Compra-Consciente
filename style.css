@@ -122,6 +122,7 @@ body {
     display: flex;
     align-items: center;
     margin-top: 0;
+    font-size: 20px
 }
 
 .question-title span {
@@ -133,7 +134,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 0.8em;
+    font-size: 2 cm;
     margin-right: 10px;
 }
 
@@ -325,4 +326,29 @@ body {
         width: 100%;
         margin-bottom: 10px;
     }
+}
+
+.redes-sociais {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.icone-instagram {
+  width: 48px;
+  height: 48px;
+  transition: transform 0.3s ease;
+}
+
+.icone-instagram:hover {
+  transform: scale(1.2);
+}
+.logo {
+  background-color: #00c853; 
+  padding: 3px;
+  border-radius: 3px; 
+   width: 35px;   
+  height: 40px;  
+}
+.logo:hover{
+    transform:scale(1.2);
 }

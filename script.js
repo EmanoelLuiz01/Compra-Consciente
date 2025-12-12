@@ -626,3 +626,23 @@ const QUESTIONS = [
 	trocarTela(telaAvaliacao);
 	adicionarListenersOpcoes();
 });
+document.addEventListener("DOMContentLoaded", () => {
+    const sentences = [
+        "Obrigado por se questionar sobre essa pergunta! Você é mestre em finanças!",
+        "Cada reflexão te deixa mais perto da liberdade financeira!",
+        "Ótima escolha! Pensar antes de comprar é um superpoder!",
+        "Você está no caminho certo para dominar suas finanças!",
+        "Parabéns! Sua consciência financeira está evoluindo!",
+        "Refletir antes de comprar é um hábito de pessoas inteligentes!",
+        "Você está construindo um futuro financeiro mais seguro!",
+        "Seu cuidado com as finanças faz toda a diferença!"
+    ];
+
+    const elemento = document.querySelector(".subtitle-avaliacao");
+
+    if (elemento) {
+        const randomSentences = sentences[Math.floor(Math.random() * sentences.length)];
+        elemento.textContent = randomSentences ;
+    }
+});
+
