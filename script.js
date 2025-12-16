@@ -110,18 +110,18 @@ const QUESTIONS = [
 		id: 'q-substitute',
 		text: 'Eu consigo substituir essa compra por algo que já tenho?',
 		options: [
-			{ text: 'Sim', value: '0', emoji: '😀' },
+			{ text: 'Sim', value: '2', emoji: '😀' },
 			{ text: 'Em dúvida', value: '1', emoji: '🤔' },
-			{ text: 'Não', value: '2', emoji: '😞' }
+			{ text: 'Não', value: '0', emoji: '😞' }
 		]
 	},
 	{
 		id: 'q-oportunidade',
 		text: 'Se eu não comprar, este valor pode ser melhor investido, poupado ou direcionado para quitar uma dívida importante?',
 		options: [
-			{ text: 'Sim', value: '0', emoji: '💰' },
+			{ text: 'Sim', value: '2', emoji: '💰' },
 			{ text: 'Talvez', value: '1', emoji: '🤔' },
-			{ text: 'Não', value: '2', emoji: '❌' }
+			{ text: 'Não', value: '0', emoji: '❌' }
 		]
 	},
 	{
@@ -645,4 +645,5 @@ document.addEventListener("DOMContentLoaded", () => {
         elemento.textContent = randomSentences ;
     }
 });
+
 
